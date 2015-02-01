@@ -302,6 +302,9 @@ class S3 {
 
 			$rest->setAmzHeader('x-amz-acl', $acl);
 			foreach ($metaHeaders as $h => $v) $rest->setAmzHeader('x-amz-meta-'.$h, $v);
+			// ZACHI: Enforcing SSE?
+			$rest->setAmzHeader('x-amz-server-side-encryption', 'AES256');
+
 			$rest->getResponse();
 		} else
 			$rest->response->error = array('code' => 0, 'message' => 'Missing input parameters');
