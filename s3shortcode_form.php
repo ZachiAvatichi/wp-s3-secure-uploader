@@ -6,9 +6,6 @@ $s3_options = get_option('s3plugin_options');
 $s3key = $s3_options["s3access_string"]; 
 $s3secret = $s3_options["s3secret_string"]; 
 $s3bucket = $s3_options["s3bucket_dropdown"];
-$s3customfield_one = $s3_options["s3db_custom_field_one"];
-$s3customfield_two = $s3_options["s3db_custom_field_two"];
-$s3table = $wpdb->prefix . 's3userDBinfo';
     
 	
 //include the S3 class
@@ -22,7 +19,7 @@ $s3 = new S3($s3key, $s3secret);
 if(isset($_POST['Submit'])){
 	// VALIDATING RE-CAPTCHA
 	$g_recaptcha_url = ("https://www.google.com/recaptcha/api/siteverify?" .
-			    "secret=*****************************************&response=" . 
+			    "secret=***GOOGLE_RECAPTCHA_SECRET_HERE***&response=" . 
 			    $_POST['g-recaptcha-response'] . "&remoteip=" . $_SERVER['REMOTE_ADDR']);
 	$json = file_get_contents($g_recaptcha_url);
 	$obj = json_decode($json);
@@ -31,10 +28,6 @@ if(isset($_POST['Submit'])){
 		echo "<div id='setting-error-settings_updated' class='updated settings-error'><strong>התרחשה שגיאה בעת העלאת הקובץ (האם אתה רובוט?), אנא נסה שנית. תודה.</strong></div>";
 	} else {
 		// Go ON AND SUBMIT - IT'S PROBABLY A HUMAN..
-		$s3customfield_one = $s3_options["s3db_custom_field_one"];
-		$s3customfield_two = $s3_options["s3db_custom_field_two"];
-		$s3table = $wpdb->prefix . 's3userDBinfo';
-
 		//retreive post variables and get ready to upload file
 		$fn = trim($_FILES['s3filename']['name']);
 		if("" !== $fn) {
@@ -59,8 +52,8 @@ if(isset($_POST['Submit'])){
 		$message = "";
 		$message .= "Name: ".$_POST['uname'] ."\r\n";
 		$message .= "Email: ".$_POST['email_add'] ."\r\n";
-		$message .= "Location: ".$_POST['custom_form_field_one'] ."\r\n";
-		$message .= "Description: ".$_POST['custom_form_field_two'] ."\r\n";
+		$message .= "Location: ".$_POST['location'] ."\r\n";
+		$message .= "Description: ".$_POST['description'] ."\r\n";
 		$message .= "Date: ".date( 'Y-m-d H:i:s', time()) ."\r\n";
 		$messageFileName = $fileName.".msg.txt";
 		$s3->putObject($message, "$s3bucket", $messageFileName, S3::ACL_PRIVATE);
@@ -75,13 +68,13 @@ if(isset($_POST['Submit'])){
 		$phpmailer->Port = 25;
 		//$phpmailer->SMTPDebug = 4;
 		$phpmailer->Username = 'leaks@shkifut.info';
-		$phpmailer->Password = '******************';
+		$phpmailer->Password = '***SMTP_PASSWORD_HERE***';
 		$phpmailer->SMTPSecure = false;
 		$phpmailer->From = 'leaks@shkifut.info';
 		$phpmailer->FromName='Leaks Mailbox';
 		$phpmailer->SetFrom("leaks@shkifut.info");
 		$phpmailer->Subject = "New Leak";
-		$phpmailer->MsgHTML("A new leak uploaded as: ".$messageFileName." <br> Access via S3 Console: https://***********.signin.aws.amazon.com/console/s3/ <br>");
+		$phpmailer->MsgHTML("A new leak uploaded as: ".$messageFileName." <br> Access via S3 Console: https://***AWS_CUSTOMER_NUMBER***.signin.aws.amazon.com/console/s3/ <br>");
 		$phpmailer->AddAddress("tomer@shkifut.info","Tomer");
 
 		if(!$phpmailer->Send()) {
@@ -101,14 +94,10 @@ if(isset($_POST['Submit'])){
 		<input name="upload_location" type="hidden" value="PAGE/POST" />
 		<p><label for="uname">שם:</label><br/><input type="text" name="uname" value="" placeholder="או כינוי"/></p>
 		<p><label for="email_add">מייל:  (ניתן לא לציין מייל או לפתוח כתובת חדשה ולבדוק אותה ממחשב ציבורי)</label><br/><input type="text" name="email_add" value="" placeholder="לא חובה"/></p>
-		<?php if ($s3customfield_one) { ?>
-	      		<p><label for="custom_form_field_one">מיקום בו נלקחה התמונה או התוכן:</label><br/><input type="text" name="custom_form_field_one" value="" /></p><br/>
-		<?php } else {} ;?>
-		<?php if ($s3customfield_two) { ?>
-			<p><label for="custom_form_field_two">תיאור:</label><br/><textarea cols="40" rows="5" name="custom_form_field_two" value="" ></textarea></p><br/>
-		<?php } else {} ;?>
+	    <p><label for="location">מיקום בו נלקחה התמונה או התוכן:</label><br/><input type="text" name="location" value="" /></p><br/>
+		<p><label for="description">תיאור:</label><br/><textarea cols="40" rows="5" name="description" value="" ></textarea></p><br/>
 		<p><input name="s3filename" type="file" /><br/></p>
-		<div class="g-recaptcha" data-sitekey="6LdYbAATAAAAAFg3sSrA4ctJ7Gache2rcZGTOBHg"></div>
+		<div class="g-recaptcha" data-sitekey="GOOGLE_RECAPTCH_DATA_SITE_KEY_HERE"></div>
 		<br/>
 		<p><input name="Submit" type="submit" value="שלח"></p>
 	</form>
